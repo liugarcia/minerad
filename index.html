@@ -24,29 +24,22 @@
             /* Fundo com gradiente suave de uma única cor */
             background: linear-gradient(to bottom right, #373C45, #2F333B);
             color: var(--text-light);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
             margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
+            padding: 0;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
 
         .container {
             background-color: var(--background-dark);
-            border-radius: 40px;
             padding: 25px;
-            width: 100%; /* Ajustado para 100% da largura disponível */
-            max-width: 900px; /* Limite máximo para telas grandes */
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
             box-shadow: 10px 10px 20px var(--shadow-dark), -10px -10px 20px var(--shadow-light);
             display: flex;
             flex-direction: column;
             gap: 20px;
-            /* Garantir que não há restrições de altura ou largura que simulem celular */
-            min-height: auto; /* Remove qualquer min-height excessivo */
         }
 
         /* Top Navigation */
@@ -237,7 +230,6 @@
         /* Bottom Navigation */
         .bottom-nav {
             background-color: var(--card-dark);
-            border-radius: 30px;
             padding: 15px 20px;
             display: flex;
             justify-content: space-around;
@@ -291,9 +283,6 @@
 
         /* Responsividade para telas maiores (desktop/tablet) */
         @media (min-width: 768px) {
-            body {
-                padding: 40px; /* Aumenta o padding para telas maiores */
-            }
             .container {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
@@ -334,11 +323,7 @@
 
         /* Responsividade para telas menores (mobile) */
         @media (max-width: 767px) { /* Ajustado para pegar telas até 767px */
-            body {
-                padding: 15px; /* Reduz o padding em telas menores */
-            }
             .container {
-                border-radius: 30px;
                 padding: 20px;
                 gap: 15px;
             }
