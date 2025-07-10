@@ -38,8 +38,9 @@
             background-color: var(--background-dark);
             border-radius: 40px;
             padding: 25px;
-            width: 100%;
-            max-width: 375px; /* Tamanho comum para mobile */
+            width: 90%; /* Ajustado para 90% da largura do pai */
+            /* max-width: 375px; REMOVIDO para tirar o "formato de celular" */
+            max-width: 900px; /* Adicionado um max-width maior para telas grandes, mas mantendo a responsividade */
             box-shadow: 10px 10px 20px var(--shadow-dark), -10px -10px 20px var(--shadow-light);
             display: flex;
             flex-direction: column;
@@ -286,7 +287,45 @@
             text-align: center;
         }
 
-        /* Responsividade */
+        /* Responsividade para telas maiores */
+        @media (min-width: 768px) {
+            .container {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                grid-template-rows: auto auto 1fr auto;
+                gap: 20px;
+                max-width: 900px; /* Limite superior para desktops */
+            }
+
+            .top-nav {
+                grid-column: 1 / -1; /* Ocupa todas as colunas */
+                margin-bottom: 0;
+            }
+
+            .main-value {
+                grid-column: 1 / -1; /* Ocupa todas as colunas */
+            }
+
+            .horizontal-group {
+                grid-column: 1 / -1; /* Ocupa todas as colunas */
+            }
+
+            .chart-card {
+                grid-column: 1 / 2; /* Ocupa a primeira coluna */
+            }
+
+            .progress-card {
+                grid-column: 2 / 3; /* Ocupa a segunda coluna */
+            }
+            
+            .bottom-nav {
+                grid-column: 1 / -1; /* Ocupa todas as colunas */
+                margin-top: 0;
+            }
+        }
+
+
+        /* Responsividade para telas menores (mantido do código anterior) */
         @media (max-width: 480px) {
             .container {
                 border-radius: 30px;
@@ -466,7 +505,7 @@
         const progressPercentage2 = document.getElementById("progress-percentage-2");
         const adBanner = document.getElementById("ad-banner");
 
-        let currentBalance = parseFloat(localStorage.getItem("currentBalance")) || 0.00;
+        let currentBalance = parseFloat(localStorage.getItem("currentBalance")) || 0.00; // Saldo inicial 0.00
         let totalMinedValue = parseFloat(localStorage.getItem("totalMinedValue")) || 0.00;
         let totalXPGained = parseInt(localStorage.getItem("totalXPGained")) || 0;
 
@@ -541,7 +580,7 @@
 
         // --- Functions to update UI elements ---
         function updateMainValues() {
-            mainBalanceElement.textContent = currentBalance.toFixed(2);
+            mainBalanceElement.textContent = `$${currentBalance.toFixed(2)}`; // Adiciona o cifrão
             totalMinedValueElement.textContent = `${totalMinedValue.toFixed(2)}`;
             totalXPGainedElement.textContent = totalXPGained;
             localStorage.setItem("currentBalance", currentBalance);
@@ -573,18 +612,9 @@
             progressPercentage2.textContent = `${percent2}%`;
         }
 
-        function mineBlock() {
-            // Simula a mineração de um bloco
-            const minedAmount = parseFloat((Math.random() * 5 + 1).toFixed(2)); // $1 to $6
-            const xpGained = Math.floor(Math.random() * 10) + 1; // 1 to 10 XP
-
-            currentBalance += minedAmount;
-            totalMinedValue += minedAmount;
-            totalXPGained += xpGained;
-
+        function updateBalancePeriodically() {
+            currentBalance += 0.01;
             updateMainValues();
-            updateChartData();
-            updateProgressBars();
         }
 
         // --- Mining Simulation Loop ---
@@ -594,10 +624,18 @@
             updateChartData();
             updateProgressBars();
 
-            // Simula a mineração a cada X segundos (por exemplo, a cada 5 segundos)
-            setInterval(mineBlock, 5000); // Mina um bloco a cada 5 segundos
-            setInterval(updateChartData, 10000); // Atualiza os dados do gráfico a cada 10 segundos para efeito de movimento
+            // Atualiza o saldo principal a cada 30 segundos
+            setInterval(updateBalancePeriodically, 30000); // 30 segundos = 30000 milissegundos
+
+            // Mantém as outras atualizações para gráficos e barras de progresso
+            setInterval(updateChartData, 10000); // Atualiza os dados do gráfico a cada 10 segundos
             setInterval(updateProgressBars, 7000); // Atualiza as barras de progresso a cada 7 segundos
+
+            // A função mineBlock() que adiciona mais valores ao "Minerados" e "Distribuidos" pode ser mantida
+            // ou removida dependendo se você ainda quer esses valores simulados.
+            // Se você só quer o 0.01 no saldo principal, pode remover a linha abaixo.
+            // Caso contrário, ela simulará a mineração de outros "blocos" de valor.
+            // setInterval(mineBlock, 5000); // Mina um bloco a cada 5 segundos (adiciona valores aleatórios a totalMinedValue e totalXPGained)
         }
 
         // Initial call to start the simulation
