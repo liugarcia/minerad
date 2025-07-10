@@ -21,7 +21,8 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #373C45; /* Um tom ligeiramente mais claro para o fundo geral */
+            /* Fundo com gradiente suave de uma única cor */
+            background: linear-gradient(to bottom right, #373C45, #2F333B);
             color: var(--text-light);
             display: flex;
             justify-content: center;
@@ -38,13 +39,14 @@
             background-color: var(--background-dark);
             border-radius: 40px;
             padding: 25px;
-            width: 90%; /* Ajustado para 90% da largura do pai */
-            /* max-width: 375px; REMOVIDO para tirar o "formato de celular" */
-            max-width: 900px; /* Adicionado um max-width maior para telas grandes, mas mantendo a responsividade */
+            width: 100%; /* Ajustado para 100% da largura disponível */
+            max-width: 900px; /* Limite máximo para telas grandes */
             box-shadow: 10px 10px 20px var(--shadow-dark), -10px -10px 20px var(--shadow-light);
             display: flex;
             flex-direction: column;
             gap: 20px;
+            /* Garantir que não há restrições de altura ou largura que simulem celular */
+            min-height: auto; /* Remove qualquer min-height excessivo */
         }
 
         /* Top Navigation */
@@ -280,21 +282,24 @@
         }
 
 
-        /* Ad Banner - Estilo para esconder */
+        /* Ad Banner (hidden by default) */
         #ad-banner {
             display: none; /* Mantido como display none, se você for usar o iframe do ad */
             margin: 20px auto;
             text-align: center;
         }
 
-        /* Responsividade para telas maiores */
+        /* Responsividade para telas maiores (desktop/tablet) */
         @media (min-width: 768px) {
+            body {
+                padding: 40px; /* Aumenta o padding para telas maiores */
+            }
             .container {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
-                grid-template-rows: auto auto 1fr auto;
+                grid-template-rows: auto auto auto 1fr auto; /* Ajuste para melhor layout */
                 gap: 20px;
-                max-width: 900px; /* Limite superior para desktops */
+                padding: 30px; /* Aumenta o padding interno */
             }
 
             .top-nav {
@@ -308,6 +313,8 @@
 
             .horizontal-group {
                 grid-column: 1 / -1; /* Ocupa todas as colunas */
+                display: grid; /* Garante que os itens internos continuem como grid */
+                grid-template-columns: 1fr 1fr; /* 2 colunas para os cards internos */
             }
 
             .chart-card {
@@ -325,8 +332,11 @@
         }
 
 
-        /* Responsividade para telas menores (mantido do código anterior) */
-        @media (max-width: 480px) {
+        /* Responsividade para telas menores (mobile) */
+        @media (max-width: 767px) { /* Ajustado para pegar telas até 767px */
+            body {
+                padding: 15px; /* Reduz o padding em telas menores */
+            }
             .container {
                 border-radius: 30px;
                 padding: 20px;
@@ -405,7 +415,7 @@
             </div>
         </div>
 
-        <div class="main-value" id="main-balance">0.00</div>
+        <div class="main-value" id="main-balance">0.00 M</div>
 
         <div class="card horizontal-group">
             <div class="card-item">
@@ -505,7 +515,8 @@
         const progressPercentage2 = document.getElementById("progress-percentage-2");
         const adBanner = document.getElementById("ad-banner");
 
-        let currentBalance = parseFloat(localStorage.getItem("currentBalance")) || 0.00; // Saldo inicial 0.00
+        // Saldo inicial 0.00
+        let currentBalance = parseFloat(localStorage.getItem("currentBalance")) || 0.00;
         let totalMinedValue = parseFloat(localStorage.getItem("totalMinedValue")) || 0.00;
         let totalXPGained = parseInt(localStorage.getItem("totalXPGained")) || 0;
 
@@ -580,7 +591,8 @@
 
         // --- Functions to update UI elements ---
         function updateMainValues() {
-            mainBalanceElement.textContent = `$${currentBalance.toFixed(2)}`; // Adiciona o cifrão
+            // Formato 0.00 M
+            mainBalanceElement.textContent = `${currentBalance.toFixed(2)} M`;
             totalMinedValueElement.textContent = `${totalMinedValue.toFixed(2)}`;
             totalXPGainedElement.textContent = totalXPGained;
             localStorage.setItem("currentBalance", currentBalance);
@@ -589,25 +601,18 @@
         }
 
         function updateChartData() {
-            // Gera dados aleatórios para simular movimento
             const newData = miningChart.data.datasets[0].data.map(() => Math.random() * 100);
             miningChart.data.datasets[0].data = newData;
-
-            // Atualiza a porcentagem aleatoriamente
-            const randomPercentage = Math.floor(Math.random() * 50) + 10; // 10% to 59%
+            const randomPercentage = Math.floor(Math.random() * 50) + 10;
             chartPercentageElement.textContent = `Disputa ${randomPercentage}%`;
-
             miningChart.update();
         }
 
         function updateProgressBars() {
-            // Gera porcentagens aleatórias para as barras de progresso
             const percent1 = Math.floor(Math.random() * 100);
             const percent2 = Math.floor(Math.random() * 100);
-
             progressBar1.style.width = `${percent1}%`;
             progressPercentage1.textContent = `${percent1}%`;
-
             progressBar2.style.width = `${percent2}%`;
             progressPercentage2.textContent = `${percent2}%`;
         }
@@ -619,26 +624,21 @@
 
         // --- Mining Simulation Loop ---
         function startMiningSimulation() {
-            // Inicializa os valores e gráficos
             updateMainValues();
             updateChartData();
             updateProgressBars();
 
-            // Atualiza o saldo principal a cada 30 segundos
-            setInterval(updateBalancePeriodically, 30000); // 30 segundos = 30000 milissegundos
+            // Atualiza o saldo principal a cada 30 segundos com 0.01
+            setInterval(updateBalancePeriodically, 30000);
 
             // Mantém as outras atualizações para gráficos e barras de progresso
-            setInterval(updateChartData, 10000); // Atualiza os dados do gráfico a cada 10 segundos
-            setInterval(updateProgressBars, 7000); // Atualiza as barras de progresso a cada 7 segundos
+            setInterval(updateChartData, 10000);
+            setInterval(updateProgressBars, 7000);
 
-            // A função mineBlock() que adiciona mais valores ao "Minerados" e "Distribuidos" pode ser mantida
-            // ou removida dependendo se você ainda quer esses valores simulados.
-            // Se você só quer o 0.01 no saldo principal, pode remover a linha abaixo.
-            // Caso contrário, ela simulará a mineração de outros "blocos" de valor.
-            // setInterval(mineBlock, 5000); // Mina um bloco a cada 5 segundos (adiciona valores aleatórios a totalMinedValue e totalXPGained)
+            // Removido a chamada a mineBlock para evitar que o saldo principal seja afetado
+            // por valores aleatórios além do 0.01 fixo.
         }
 
-        // Initial call to start the simulation
         document.addEventListener('DOMContentLoaded', startMiningSimulation);
 
     </script>
