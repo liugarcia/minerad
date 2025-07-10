@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mineração de XP - Crypto Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --background-dark: #20232A;
+            --card-dark: #2C3038;
+            --text-light: #E0E0E0;
+            --primary-green: #00FF99;
+            --secondary-green: #00CCFF;
+            --red-highlight: #F74464;
+            --green-highlight: #3FE283;
+            --shadow-dark: rgba(0, 0, 0, 0.4);
+            --shadow-light: rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #373C45; /* Um tom ligeiramente mais claro para o fundo geral */
+            color: var(--text-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            background-color: var(--background-dark);
+            border-radius: 40px;
+            padding: 25px;
+            width: 100%;
+            max-width: 375px; /* Tamanho comum para mobile */
+            box-shadow: 10px 10px 20px var(--shadow-dark), -10px -10px 20px var(--shadow-light);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .icon-button {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background-color: var(--card-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .icon-button svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--text-light);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 10px;
+            height: 10px;
+            background-color: var(--green-highlight);
+            border-radius: 50%;
+            border: 2px solid var(--background-dark);
+        }
+
+        /* Main Value */
+        .main-value {
+            font-size: 4em;
+            font-weight: 600;
+            text-align: center;
+            margin-top: -10px;
+        }
+
+        /* Cards */
+        .card {
+            background-color: var(--card-dark);
+            border-radius: 20px;
+            padding: 15px;
+            box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .card.horizontal-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            padding: 0;
+            background: none;
+            box-shadow: none;
+        }
+
+        .card.horizontal-group > .card-item {
+            background-color: var(--card-dark);
+            border-radius: 20px;
+            padding: 15px;
+            box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card-icon.red {
+            background-color: var(--red-highlight);
+        }
+        .card-icon.green {
+            background-color: var(--green-highlight);
+        }
+
+        .card-icon svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--text-light);
+        }
+
+        .card-value {
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .card-label {
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Chart Card */
+        .chart-card {
+            padding: 15px 15px 10px 5px; /* Ajuste para o padding do gráfico */
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            position: relative;
+        }
+
+        .chart-label {
+            font-size: 1.1em;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 150px; /* Altura fixa para o gráfico */
+            position: relative;
+        }
+
+        /* Progress Bars */
+        .progress-card {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .progress-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            width: 100%;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .progress-label {
+            font-size: 1em;
+            font-weight: 500;
+        }
+
+        .progress-percentage {
+            font-size: 0.9em;
+            font-weight: 600;
+            color: var(--green-highlight);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light);
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            border-radius: 4px;
+            transition: width 0.3s ease-in-out;
+            background: linear-gradient(90deg, var(--primary-green), var(--secondary-green));
+        }
+
+        .progress-bar.red-gradient {
+            background: linear-gradient(90deg, var(--red-highlight), #FF80A0);
+        }
+
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            background-color: var(--card-dark);
+            border-radius: 30px;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+            margin-top: 10px;
+        }
+
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .bottom-nav-item.active {
+            color: var(--primary-green);
+        }
+
+        .bottom-nav-item svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor; /* Usa a cor do texto pai */
+        }
+
+        .bottom-nav-item .add-button {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary-green), var(--secondary-green));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+            margin-top: -30px; /* Ajuste para centralizar visualmente */
+        }
+        .bottom-nav-item .add-button svg {
+            fill: var(--background-dark);
+        }
+
+
+        /* Ad Banner - Estilo para esconder */
+        #ad-banner {
+            display: none; /* Mantido como display none, se você for usar o iframe do ad */
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        /* Responsividade */
+        @media (max-width: 480px) {
+            .container {
+                border-radius: 30px;
+                padding: 20px;
+                gap: 15px;
+            }
+
+            .main-value {
+                font-size: 3.5em;
+            }
+
+            .card {
+                padding: 12px;
+                gap: 12px;
+            }
+
+            .card.horizontal-group > .card-item {
+                padding: 12px;
+            }
+
+            .card-icon {
+                width: 35px;
+                height: 35px;
+            }
+
+            .card-icon svg {
+                width: 18px;
+                height: 18px;
+            }
+
+            .card-value {
+                font-size: 1.1em;
+            }
+
+            .card-label {
+                font-size: 0.75em;
+            }
+
+            .chart-card {
+                padding: 12px 12px 8px 5px;
+            }
+
+            .chart-label {
+                font-size: 1em;
+            }
+
+            .bottom-nav {
+                padding: 12px 15px;
+            }
+
+            .bottom-nav-item svg {
+                width: 20px;
+                height: 20px;
+            }
+
+            .bottom-nav-item .add-button {
+                width: 45px;
+                height: 45px;
+                margin-top: -25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="top-nav">
+            <div class="icon-button">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+            </div>
+            <div class="icon-button">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.93 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                </svg>
+                <span class="notification-badge"></span>
+            </div>
+        </div>
+
+        <div class="main-value" id="main-balance">0.00</div>
+
+        <div class="card horizontal-group">
+            <div class="card-item">
+                <div class="card-icon red">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M16 18l-6-6 6-6V18z"/>
+                    </svg>
+                </div>
+                <div class="card-value" id="total-mined-value">0</div>
+                <div class="card-label">Distribuidos</div>
+            </div>
+            <div class="card-item">
+                <div class="card-icon green">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M8 6l6 6-6 6V6z"/>
+                    </svg>
+                </div>
+                <div class="card-value" id="total-xp-gained">0</div>
+                <div class="card-label">Minerados</div>
+            </div>
+        </div>
+
+        <div class="card chart-card">
+            <div class="chart-label" id="chart-percentage">Competição 17%</div>
+            <div class="chart-container">
+                <canvas id="miningChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card progress-card">
+            <div class="progress-item">
+                <div class="progress-header">
+                    <div class="progress-label" id="progress-label-1">Vencendo</div>
+                    <div class="progress-percentage" id="progress-percentage-1">98%</div>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progress-bar-1"></div>
+                </div>
+            </div>
+            <div class="progress-item">
+                <div class="progress-header">
+                    <div class="progress-label" id="progress-label-2">Perdendo</div>
+                    <div class="progress-percentage" id="progress-percentage-2">37%</div>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar red-gradient" id="progress-bar-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="ad-banner">
+            </div>
+
+        <div class="bottom-nav">
+            <div class="bottom-nav-item active">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                </svg>
+                <span>Gráfico</span>
+            </div>
+            <div class="bottom-nav-item">
+                <div class="add-button">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="bottom-nav-item">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+                </svg>
+                <span>Config.</span>
+            </div>
+            <div class="bottom-nav-item">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4V8h16v10z"/>
+                </svg>
+                <span>Carteira</span>
+            </div>
+            <div class="bottom-nav-item">
+                <svg viewBox="0 0 24 24">
+                    <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                </svg>
+                <span>Mais</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const mainBalanceElement = document.getElementById("main-balance");
+        const totalMinedValueElement = document.getElementById("total-mined-value");
+        const totalXPGainedElement = document.getElementById("total-xp-gained");
+        const chartPercentageElement = document.getElementById("chart-percentage");
+        const progressBar1 = document.getElementById("progress-bar-1");
+        const progressBar2 = document.getElementById("progress-bar-2");
+        const progressPercentage1 = document.getElementById("progress-percentage-1");
+        const progressPercentage2 = document.getElementById("progress-percentage-2");
+        const adBanner = document.getElementById("ad-banner");
+
+        let currentBalance = parseFloat(localStorage.getItem("currentBalance")) || 0.00;
+        let totalMinedValue = parseFloat(localStorage.getItem("totalMinedValue")) || 0.00;
+        let totalXPGained = parseInt(localStorage.getItem("totalXPGained")) || 0;
+
+        // --- Chart.js Configuration ---
+        const ctx = document.getElementById('miningChart').getContext('2d');
+        const miningChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [{
+                    label: 'Performance',
+                    data: [
+                        Math.random() * 100, Math.random() * 100, Math.random() * 100,
+                        Math.random() * 100, Math.random() * 100, Math.random() * 100,
+                        Math.random() * 100, Math.random() * 100, Math.random() * 100,
+                        Math.random() * 100, Math.random() * 100, Math.random() * 100
+                    ],
+                    borderColor: 'rgba(0, 255, 153, 1)', // Primary Green
+                    backgroundColor: 'rgba(0, 255, 153, 0.2)',
+                    fill: true,
+                    tension: 0.4, // Smooth curve
+                    pointRadius: 5,
+                    pointBackgroundColor: 'rgba(0, 204, 255, 1)', // Secondary Green for points
+                    pointBorderColor: 'rgba(255, 255, 255, 0.8)',
+                    pointHoverRadius: 7,
+                    borderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        enabled: true,
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(44, 48, 56, 0.9)',
+                        titleColor: '#fff',
+                        bodyColor: '#E0E0E0',
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 1,
+                        cornerRadius: 8,
+                        displayColors: false,
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.6)'
+                        }
+                    },
+                    y: {
+                        display: false, /* Esconde o eixo Y */
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            display: false /* Esconde os rótulos do eixo Y */
+                        }
+                    }
+                }
+            }
+        });
+
+        // --- Functions to update UI elements ---
+        function updateMainValues() {
+            mainBalanceElement.textContent = currentBalance.toFixed(2);
+            totalMinedValueElement.textContent = `${totalMinedValue.toFixed(2)}`;
+            totalXPGainedElement.textContent = totalXPGained;
+            localStorage.setItem("currentBalance", currentBalance);
+            localStorage.setItem("totalMinedValue", totalMinedValue);
+            localStorage.setItem("totalXPGained", totalXPGained);
+        }
+
+        function updateChartData() {
+            // Gera dados aleatórios para simular movimento
+            const newData = miningChart.data.datasets[0].data.map(() => Math.random() * 100);
+            miningChart.data.datasets[0].data = newData;
+
+            // Atualiza a porcentagem aleatoriamente
+            const randomPercentage = Math.floor(Math.random() * 50) + 10; // 10% to 59%
+            chartPercentageElement.textContent = `Disputa ${randomPercentage}%`;
+
+            miningChart.update();
+        }
+
+        function updateProgressBars() {
+            // Gera porcentagens aleatórias para as barras de progresso
+            const percent1 = Math.floor(Math.random() * 100);
+            const percent2 = Math.floor(Math.random() * 100);
+
+            progressBar1.style.width = `${percent1}%`;
+            progressPercentage1.textContent = `${percent1}%`;
+
+            progressBar2.style.width = `${percent2}%`;
+            progressPercentage2.textContent = `${percent2}%`;
+        }
+
+        function mineBlock() {
+            // Simula a mineração de um bloco
+            const minedAmount = parseFloat((Math.random() * 5 + 1).toFixed(2)); // $1 to $6
+            const xpGained = Math.floor(Math.random() * 10) + 1; // 1 to 10 XP
+
+            currentBalance += minedAmount;
+            totalMinedValue += minedAmount;
+            totalXPGained += xpGained;
+
+            updateMainValues();
+            updateChartData();
+            updateProgressBars();
+        }
+
+        // --- Mining Simulation Loop ---
+        function startMiningSimulation() {
+            // Inicializa os valores e gráficos
+            updateMainValues();
+            updateChartData();
+            updateProgressBars();
+
+            // Simula a mineração a cada X segundos (por exemplo, a cada 5 segundos)
+            setInterval(mineBlock, 5000); // Mina um bloco a cada 5 segundos
+            setInterval(updateChartData, 10000); // Atualiza os dados do gráfico a cada 10 segundos para efeito de movimento
+            setInterval(updateProgressBars, 7000); // Atualiza as barras de progresso a cada 7 segundos
+        }
+
+        // Initial call to start the simulation
+        document.addEventListener('DOMContentLoaded', startMiningSimulation);
+
+    </script>
+</body>
+</html>
